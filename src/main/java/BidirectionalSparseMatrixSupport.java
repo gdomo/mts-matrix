@@ -43,6 +43,7 @@ public class BidirectionalSparseMatrixSupport implements SparseMatrixSupport<Bid
             } else { //получен первый элемент следующей строки, текущая готова
                 final ArrayList<Point> columnPoints = new ArrayList<>();
                 int currentColumn = 0;
+                //сбор столбца
                 for (Point columnPoint : secondByColumns) {
                     if (columnPoint.getColumn() == currentColumn) {
                         columnPoints.add(columnPoint);

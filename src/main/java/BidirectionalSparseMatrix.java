@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -17,30 +17,21 @@ public class BidirectionalSparseMatrix {
      *               Stream не должен быть parallel
      */
     public BidirectionalSparseMatrix(Stream<Integer> stream) {
-        final AtomicInteger streamCounter = new AtomicInteger(0);
+        final AtomicLong streamCounter = new AtomicLong(0);
         final int[] rowsColumns = new int[2];
         final List<Point> pointsByRows = new ArrayList<>();
         stream
-                .map(value -> new Point(streamCounter.getAndIncrement(), value, 0))
-                .forEach(countedValue -> {
-                    int count = countedValue.getColumn(); //некрасиво, но ладно
-                    final int value = countedValue.getRow();
-                    switch (count) {
-                        case 0: {
-                            rowsColumns[0] = value;
-                            break;
-                        }
-                        case 1: {
-                            rowsColumns[1] = value;
-                            break;
-                        }
-                        default: {
-                            if (value != 0) {
-                                count = count - 2; //теперь count - это номер элемента с матрице, а не стриме
-                                final Point point = new Point(count % rowsColumns[1], count / rowsColumns[1], value);
-                                pointsByRows.add(point);
-                            }
-                            break;
+                .forEach(value -> {
+                    long count = streamCounter.getAndIncrement();
+                    if (count == 0) {
+                        rowsColumns[0] = value;
+                    } else if (count == 1) {
+                        rowsColumns[1] = value;
+                    } else {
+                        if (value != 0) {
+                            count = count - 2; //теперь count - это номер элемента с матрице, а не стриме
+                            final Point point = new Point((int) (count % rowsColumns[1]), (int) (count / rowsColumns[1]), value);
+                            pointsByRows.add(point);
                         }
                     }
                 });
