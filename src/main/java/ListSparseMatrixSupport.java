@@ -1,26 +1,31 @@
 import java.util.*;
 import java.util.stream.Stream;
 
-public class BidirectionalSparseMatrixSupport implements SparseMatrixSupport<BidirectionalSparseMatrix> {
+//идея решения:
+//взять все точки второй матрицы, и переложить их в сортированную по столбцам коллекцию
+//взять все точки первой матрицы, пробегая по ним собирать строки и для каждой собранной строки
+//бежать по коллекции точек второй матрицы (сортирвоанной по столбцам)
+//собирая столбцы и перемножая собранные стркоу и столбец
+public class ListSparseMatrixSupport implements SparseMatrixSupport<ListSparseMatrix> {
     @Override
-    public Stream<Integer> toStream(BidirectionalSparseMatrix matrix) {
+    public Stream<Integer> toStream(ListSparseMatrix matrix) {
         return matrix.toStream();
     }
 
     @Override
-    public BidirectionalSparseMatrix fromStream(Stream<Integer> stream) {
-        return new BidirectionalSparseMatrix(stream);
+    public ListSparseMatrix fromStream(Stream<Integer> stream) {
+        return new ListSparseMatrix(stream);
     }
 
     @Override
-    public BidirectionalSparseMatrix multiply(BidirectionalSparseMatrix first, BidirectionalSparseMatrix second) {
+    public ListSparseMatrix multiply(ListSparseMatrix first, ListSparseMatrix second) {
         if (first.getColumns() != second.getRows()) {
             throw new IllegalArgumentException();
         }
         final List<Point> firstByRows = new ArrayList<>(first.getPointsByRows());
         final List<Point> secondByRows = second.getPointsByRows();
         if (firstByRows.size() == 0 || secondByRows.size() == 0) {
-            return new BidirectionalSparseMatrix(Collections.emptyList(), first.getRows(), second.getColumns());
+            return new ListSparseMatrix(Collections.emptyList(), first.getRows(), second.getColumns());
         }
         final SortedSet<Point> secondByColumns = new TreeSet<>((p1, p2) -> {
             if (p1.getColumn() == p2.getColumn()) {
@@ -63,12 +68,13 @@ public class BidirectionalSparseMatrixSupport implements SparseMatrixSupport<Bid
             }
         }
 
-        return new BidirectionalSparseMatrix(productByRows, first.getRows(), second.getColumns());
+        return new ListSparseMatrix(productByRows, first.getRows(), second.getColumns());
     }
 
     private int multiply(Collection<Point> row, Collection<Point> column) {
-        //потенциально, можно оптимизировать и обойтись без копирования умножаемых стркои-столбца в коллекции
+        //потенциально, наверное можно оптимизировать и обойтись без копирования умножаемых стркои-столбца в коллекции
         //но так проще и понятнее
+        //также модно было бы распарралелить вычисление строк результирующей матрицы
         if (row.size() == 0 || column.size() == 0) {
             return 0;
         }

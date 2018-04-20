@@ -5,7 +5,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-public class BidirectionalSparseMatrix {
+//хранит просто множество точек в списке
+public class ListSparseMatrix {
     private final List<Point> pointsByRows;
     private final int rows;
     private final int columns;
@@ -16,7 +17,7 @@ public class BidirectionalSparseMatrix {
      *               Далее - элементы матрицы слева-направо и сверху-вниз. Null не допускается.
      *               Stream не должен быть parallel
      */
-    public BidirectionalSparseMatrix(Stream<Integer> stream) {
+    public ListSparseMatrix(Stream<Integer> stream) {
         final AtomicLong streamCounter = new AtomicLong(0);
         final int[] rowsColumns = new int[2];
         final List<Point> pointsByRows = new ArrayList<>();
@@ -43,7 +44,7 @@ public class BidirectionalSparseMatrix {
         this.pointsByRows = Collections.unmodifiableList(pointsByRows);
     }
 
-    public BidirectionalSparseMatrix(List<Point> pointsByRows, int rows, int columns) {
+    public ListSparseMatrix(List<Point> pointsByRows, int rows, int columns) {
         this.pointsByRows = Collections.unmodifiableList(new ArrayList<>(pointsByRows));
         this.rows = rows;
         this.columns = columns;
@@ -57,7 +58,7 @@ public class BidirectionalSparseMatrix {
                         .flatMap(point -> {
                             final Stream<Integer> stream = Stream.concat(
                                     zeroStreamBetween(previous, point),
-                                    point.getRow() < rows ? Stream.of(point.getValue()) : zeroStreamBetween(previous, point));
+                                    point.getRow() < rows ? Stream.of(point.getValue()) : Stream.empty());
                             previous.set(point);
                             return stream;
                         }))
